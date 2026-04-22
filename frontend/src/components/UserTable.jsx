@@ -1,169 +1,63 @@
 import React from 'react';
 import {
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
-  TableContainer,
-  Avatar,
-  HStack,
-  Text,
-  Badge,
-  IconButton,
-  Tooltip,
-  Box,
-  VStack,
-  Flex,
+  Table, Thead, Tbody, Tr, Th, Td, TableContainer,
+  Avatar, HStack, Text, Badge, IconButton, Tooltip, Box
 } from '@chakra-ui/react';
 import { DeleteIcon } from '@chakra-ui/icons';
-import { FiMapPin } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const MotionTr = motion(Tr);
 
-/**
- * getRoleColor — returns a badge color based on job title keywords
- */
-const getRoleColor = (role = '') => {
-  const r = role.toLowerCase();
-  if (r.includes('chief') || r.includes('manager') || r.includes('director')) return 'purple';
-  if (r.includes('engineer') || r.includes('developer') || r.includes('architect')) return 'cyan';
-  if (r.includes('analyst') || r.includes('specialist')) return 'teal';
-  if (r.includes('admin')) return 'orange';
-  return 'gray';
-};
-
-/**
- * UserTable — renders the list of users in a styled, animated table
- * @param {Array}    users    - array of user objects to display
- * @param {Function} onDelete - callback(id) to remove a user from UI state
- */
 const UserTable = ({ users, onDelete }) => {
-  if (users.length === 0) {
-    return (
-      <VStack py={20} spacing={3} color="whiteAlpha.400">
-        <Text fontSize="4xl">🔍</Text>
-        <Text fontSize="lg" fontWeight="600">No users found</Text>
-        <Text fontSize="sm">Try adjusting your search or add a new user.</Text>
-      </VStack>
-    );
-  }
+  if (!users.length) return <Box py={10} textAlign="center" opacity={0.5}>No users found</Box>;
 
   return (
-    <TableContainer
-      bg="rgba(255,255,255,0.03)"
-      borderRadius="2xl"
-      border="1px solid rgba(255,255,255,0.06)"
-      overflowX="auto"
-    >
-      <Table variant="unstyled" size="md">
-        <Thead>
+    <TableContainer bg="whiteAlpha.50" borderRadius="xl" border="1px solid" borderColor="whiteAlpha.100">
+      <Table variant="simple">
+        <Thead borderBottom="2px solid" borderColor="whiteAlpha.100">
           <Tr>
-            {['#', 'User', 'Company', 'Role', 'Country', 'Actions'].map((h) => (
-              <Th
-                key={h}
-                color="whiteAlpha.500"
-                fontSize="xs"
-                textTransform="uppercase"
-                letterSpacing="wider"
-                borderBottom="1px solid rgba(255,255,255,0.07)"
-                py={4}
-                px={6}
-              >
-                {h}
-              </Th>
-            ))}
+            <Th color="whiteAlpha.600">User</Th>
+            <Th color="whiteAlpha.600">Company</Th>
+            <Th color="whiteAlpha.600">Role</Th>
+            <Th color="whiteAlpha.600">Country</Th>
+            <Th></Th>
           </Tr>
         </Thead>
         <Tbody>
           <AnimatePresence>
-            {users.map((user, idx) => (
+            {users.map((u) => (
               <MotionTr
-                key={user.id}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20, scale: 0.98 }}
-                transition={{ duration: 0.2, delay: idx * 0.03 }}
-                _hover={{ bg: 'rgba(255,255,255,0.04)' }}
-                role="group"
-                style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}
+                key={u.id}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0, x: -20 }}
+                _hover={{ bg: "whiteAlpha.50" }}
               >
-                {/* # */}
-                <Td px={6} py={4} color="whiteAlpha.300" fontSize="xs" width="50px">
-                  {idx + 1}
-                </Td>
-
-                {/* User — avatar + name + email */}
-                <Td px={6} py={4} minW="200px">
-                  <HStack spacing={3}>
-                    <Avatar
-                      name={`${user.firstName} ${user.lastName}`}
-                      src={user.image}
-                      size="sm"
-                      border="2px solid"
-                      borderColor="brand.600"
-                      flexShrink={0}
-                    />
+                <Td border="none">
+                  <HStack>
+                    <Avatar size="sm" src={u.image} name={u.firstName} />
                     <Box>
-                      <Text fontWeight="600" fontSize="sm" lineHeight="1.3">
-                        {user.firstName} {user.lastName}
-                      </Text>
-                      {user.email && (
-                        <Text fontSize="xs" color="whiteAlpha.400" noOfLines={1}>
-                          {user.email}
-                        </Text>
-                      )}
+                      <Text fontSize="sm" fontWeight="bold">{u.firstName} {u.lastName}</Text>
+                      <Text fontSize="xs" opacity={0.5}>{u.email}</Text>
                     </Box>
                   </HStack>
                 </Td>
-
-                {/* Company */}
-                <Td px={6} py={4} minW="160px">
-                  <Text fontSize="sm" color="whiteAlpha.800" noOfLines={1}>
-                    {user.company || '—'}
-                  </Text>
-                </Td>
-
-                {/* Role */}
-                <Td px={6} py={4} minW="160px">
-                  <Badge
-                    colorScheme={getRoleColor(user.role)}
-                    borderRadius="full"
-                    px={3}
-                    py={0.5}
-                    fontSize="xs"
-                    fontWeight="600"
-                  >
-                    {user.role || 'N/A'}
+                <Td border="none" fontSize="sm">{u.company}</Td>
+                <Td border="none">
+                  <Badge colorScheme="purple" variant="subtle" px={2} borderRadius="md">
+                    {u.role}
                   </Badge>
                 </Td>
-
-                {/* Country */}
-                <Td px={6} py={4} minW="140px">
-                  <HStack spacing={1} color="whiteAlpha.600" fontSize="sm">
-                    <FiMapPin size={12} />
-                    <Text>{user.country || '—'}</Text>
-                  </HStack>
-                </Td>
-
-                {/* Actions */}
-                <Td px={6} py={4} width="80px">
-                  <Tooltip label="Remove from list" placement="left" hasArrow>
-                    <IconButton
-                      id={`delete-user-${user.id}`}
-                      icon={<DeleteIcon />}
-                      size="sm"
-                      aria-label={`Delete ${user.firstName}`}
-                      colorScheme="red"
-                      variant="ghost"
-                      opacity={0}
-                      _groupHover={{ opacity: 1 }}
-                      transition="opacity 0.2s"
-                      onClick={() => onDelete(user.id)}
-                    />
-                  </Tooltip>
+                <Td border="none" fontSize="sm">{u.country}</Td>
+                <Td border="none">
+                  <IconButton
+                    icon={<DeleteIcon />}
+                    size="sm"
+                    variant="ghost"
+                    colorScheme="red"
+                    onClick={() => onDelete(u.id)}
+                    aria-label="Delete"
+                  />
                 </Td>
               </MotionTr>
             ))}
