@@ -1,26 +1,23 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const { PrismaClient } = require('@prisma/client');
+const userRoutes = require('./routes/users');
+const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
-const prisma = new PrismaClient();
 const port = process.env.PORT || 5001;
 
+// Middleware
 app.use(cors());
 app.use(express.json());
 
-app.get('/users', async (req, res) => {
-  try {
-    const users = await prisma.user.findMany({
-      orderBy: { id: 'asc' }
-    });
-    res.json(users);
-  } catch (err) {
-    res.status(500).json({ error: 'Database fetch failed' });
-  }
-});
+// Routes
+app.use('/users', userRoutes);
 
+// Centralized Error Handling
+app.use(errorHandler);
+
+// Start Server
 app.listen(port, () => {
-  console.log(`Server live on ${port}`);
+  console.log(`🚀 REST API Server running on http://localhost:${port}`);
 });
