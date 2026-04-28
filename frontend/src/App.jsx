@@ -35,7 +35,7 @@ const SearchBar = ({ value, onChange }) => (
   </Box>
 );
 
-const MotionTr = motion(Tr);
+const MotionTr = motion.create(Tr);
 
 const UserTable = ({ users, onDelete }) => {
   if (!users.length) return (
@@ -138,7 +138,7 @@ const App = () => {
 
   useEffect(() => { loadData(); }, [loadData]);
 
-  const onAddUser = () => {
+  const onAddUser = async () => {
     const names = [
       { first: 'Sarah', last: 'Johnson', role: 'Designer', country: 'USA' },
       { first: 'Marcus', last: 'Chen', role: 'Engineer', country: 'Singapore' },
@@ -149,29 +149,38 @@ const App = () => {
       { first: 'Leo', last: 'Silva', role: 'Developer', country: 'Brazil' }
     ];
     const person = names[Math.floor(Math.random() * names.length)];
-    const id = Date.now();
     
-    const newUser = {
-      id,
+    const newUserRequest = {
       firstName: person.first,
       lastName: person.last,
-      email: `${person.first.toLowerCase()}.${person.last.toLowerCase()}@example.com`,
+      email: `${person.first.toLowerCase()}.${Date.now()}@example.com`,
       company: 'Future Collective',
       role: person.role,
       country: person.country,
-      image: `https://api.dicebear.com/7.x/avataaars/svg?seed=${person.first}${id}`
+      image: `https://api.dicebear.com/7.x/avataaars/svg?seed=${person.first}${Date.now()}`
     };
     
-    setUsers([newUser, ...users]);
-    toast({ 
-      title: 'Welcome aboard!', 
-      description: `We've added ${person.first} to our team.`,
-      status: 'success', 
-      duration: 3000,
-      isClosable: true,
-      variant: 'subtle',
-      position: 'top-right'
-    });
+    try {
+      const { data: savedUser } = await axios.post(`${API_BASE}/users`, newUserRequest);
+      setUsers([savedUser, ...users]);
+      toast({ 
+        title: 'Welcome aboard!', 
+        description: `We've added ${person.first} to our team permanently.`,
+        status: 'success', 
+        duration: 3000,
+        isClosable: true,
+        variant: 'subtle',
+        position: 'top-right'
+      });
+    } catch (err) {
+      toast({
+        title: 'Error adding member',
+        description: err.message,
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+    }
   };
 
   const handleDeleteClick = (user) => {
@@ -179,17 +188,28 @@ const App = () => {
     onOpen();
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (userToDelete) {
-      setUsers(users.filter(u => u.id !== userToDelete.id));
-      toast({
-        title: 'Member removed',
-        description: `${userToDelete.firstName} has left the community.`,
-        status: 'info',
-        duration: 3000,
-        isClosable: true,
-        variant: 'left-accent'
-      });
+      try {
+        await axios.delete(`${API_BASE}/users/${userToDelete.id}`);
+        setUsers(users.filter(u => u.id !== userToDelete.id));
+        toast({
+          title: 'Member removed',
+          description: `${userToDelete.firstName} has left the community.`,
+          status: 'info',
+          duration: 3000,
+          isClosable: true,
+          variant: 'left-accent'
+        });
+      } catch (err) {
+        toast({
+          title: 'Error removing member',
+          description: err.message,
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+        });
+      }
     }
     onClose();
   };
